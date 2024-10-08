@@ -48,7 +48,7 @@ const UserInfo = (props: Props) => {
   };
 
   const setNumbFollowees = async () => {
-    presenter.setNumbFollowee(authToken!, displayedUser!);
+    presenter.setNumbFollowees(authToken!, displayedUser!);
   };
 
   const setNumbFollowers = async () => {
@@ -60,7 +60,7 @@ const UserInfo = (props: Props) => {
   };
 
   const followDisplayedUser = async (event: React.MouseEvent) => {
-    presenter.unfollowDisplayedUser(event);
+    presenter.followDisplayedUser(event);
   };
 
   const switchToLoggedInUser = (event: React.MouseEvent): void => {

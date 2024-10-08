@@ -38,7 +38,7 @@ export class UserInfoPresenter {
     }
   }
 
-  public async setNumbFollowee(authToken: AuthToken, displayedUser: User) {
+  public async setNumbFollowees(authToken: AuthToken, displayedUser: User) {
     try {
       this.view.setFolloweeCount(await this.userService.getFolloweeCount(authToken, displayedUser));
     } catch (error) {
