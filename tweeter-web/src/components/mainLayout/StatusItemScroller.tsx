@@ -9,7 +9,12 @@ export const PAGE_SIZE = 10;
 
 interface Props {
   itemDescription: string;
-  loadMore: (authToken: AuthToken, userAlias: string, pageSize: number, lastItem: Status | null) => Promise<[Status[], boolean]>;
+  loadMore: (
+    authToken: AuthToken,
+    userAlias: string,
+    pageSize: number,
+    lastItem: Status | null
+  ) => Promise<[Status[], boolean]>;
 }
 
 const StatusItemScroller = (props: Props) => {
@@ -53,20 +58,33 @@ const StatusItemScroller = (props: Props) => {
 
   const loadMoreItems = async () => {
     try {
-      const [newItems, hasMore] = await props.loadMore(authToken!, displayedUser!.alias, PAGE_SIZE, lastItem);
+      const [newItems, hasMore] = await props.loadMore(
+        authToken!,
+        displayedUser!.alias,
+        PAGE_SIZE,
+        lastItem
+      );
 
       setHasMoreItems(hasMore);
       setLastItem(newItems[newItems.length - 1]);
       addItems(newItems);
       setChangedDisplayedUser(false);
     } catch (error) {
-      displayErrorMessage(`Failed to load ${props.itemDescription} items because of exception: ${error}`);
+      displayErrorMessage(
+        `Failed to load ${props.itemDescription} items because of exception: ${error}`
+      );
     }
   };
 
   return (
     <div className="container px-0 overflow-visible vh-100">
-      <InfiniteScroll className="pr-0 mr-0" dataLength={items.length} next={loadMoreItems} hasMore={hasMoreItems} loader={<h4>Loading...</h4>}>
+      <InfiniteScroll
+        className="pr-0 mr-0"
+        dataLength={items.length}
+        next={loadMoreItems}
+        hasMore={hasMoreItems}
+        loader={<h4>Loading...</h4>}
+      >
         {items.map((item, index) => (
           <div key={index} className="row mb-3 mx-0 px-0 border rounded bg-white">
             <StatusItem status={item} />
