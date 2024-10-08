@@ -3,40 +3,33 @@ import { useState } from "react";
 import { AuthToken, Status } from "tweeter-shared";
 import useToastListener from "../toaster/ToastListenerHook";
 import useUserInfo from "../userInfo/UserInfoHook";
+import { PostPresenter, PostView } from "../../presenters/PostPresenter";
 
-const PostStatus = () => {
+interface Props {
+  presenterGenerator: (view: PostView) => PostPresenter;
+}
+
+const PostStatus = (props: Props) => {
   const { displayErrorMessage, displayInfoMessage, clearLastInfoMessage } = useToastListener();
 
   const { currentUser, authToken } = useUserInfo();
   const [post, setPost] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const submitPost = async (event: React.MouseEvent) => {
-    event.preventDefault();
-
-    try {
-      setIsLoading(true);
-      displayInfoMessage("Posting status...", 0);
-
-      const status = new Status(post, currentUser!, Date.now());
-
-      await postStatus(authToken!, status);
-
-      setPost("");
-      displayInfoMessage("Status posted!", 2000);
-    } catch (error) {
-      displayErrorMessage(`Failed to post the status because of exception: ${error}`);
-    } finally {
-      clearLastInfoMessage();
-      setIsLoading(false);
-    }
+  const listener: PostView = {
+    displayErrorMessage: displayErrorMessage,
+    displayInfoMessage: displayInfoMessage,
+    clearLastInfoMessage: clearLastInfoMessage,
+    setIsLoading: setIsLoading,
+    authToken: authToken,
+    currentUser: currentUser,
+    post: post,
+    setPost: setPost
   };
+  const [presenter] = useState(props.presenterGenerator(listener));
 
-  const postStatus = async (authToken: AuthToken, newStatus: Status): Promise<void> => {
-    // Pause so we can see the logging out message. Remove when connected to the server
-    await new Promise((f) => setTimeout(f, 2000));
-
-    // TODO: Call the server to post the status
+  const submitPost = async (event: React.MouseEvent) => {
+    presenter.submitPost(event);
   };
 
   const clearPost = (event: React.MouseEvent) => {
@@ -64,10 +57,31 @@ const PostStatus = () => {
           />
         </div>
         <div className="form-group">
-          <button id="postStatusButton" className="btn btn-md btn-primary me-1" type="button" disabled={checkButtonStatus()} style={{ width: "8em" }} onClick={(event) => submitPost(event)}>
-            {isLoading ? <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> : <div>Post Status</div>}
+          <button
+            id="postStatusButton"
+            className="btn btn-md btn-primary me-1"
+            type="button"
+            disabled={checkButtonStatus()}
+            style={{ width: "8em" }}
+            onClick={(event) => submitPost(event)}
+          >
+            {isLoading ? (
+              <span
+                className="spinner-border spinner-border-sm"
+                role="status"
+                aria-hidden="true"
+              ></span>
+            ) : (
+              <div>Post Status</div>
+            )}
           </button>
-          <button id="clearStatusButton" className="btn btn-md btn-secondary" type="button" disabled={checkButtonStatus()} onClick={(event) => clearPost(event)}>
+          <button
+            id="clearStatusButton"
+            className="btn btn-md btn-secondary"
+            type="button"
+            disabled={checkButtonStatus()}
+            onClick={(event) => clearPost(event)}
+          >
             Clear
           </button>
         </div>
