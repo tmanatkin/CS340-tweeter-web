@@ -2,13 +2,19 @@ import { User } from "tweeter-shared";
 import { Link } from "react-router-dom";
 
 import useUserNavigation from "../navigation/UserNavigationHook";
+import {
+  UserNavigationHookView,
+  UserNavigationHookPresenter
+} from "../../presenters/UserNavigationHookPresenter";
 
 interface Props {
   value: User;
 }
 
 const UserItem = (props: Props) => {
-  const { navigateToUser } = useUserNavigation();
+  const { navigateToUser } = useUserNavigation({
+    presenterGenerator: (view) => new UserNavigationHookPresenter(view)
+  });
 
   return (
     <div className="col bg-light mx-0 px-0">

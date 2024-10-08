@@ -2,13 +2,16 @@ import { Status, Type } from "tweeter-shared";
 import { Link } from "react-router-dom";
 
 import useUserNavigation from "../navigation/UserNavigationHook";
+import { UserNavigationHookPresenter } from "../../presenters/UserNavigationHookPresenter";
 
 interface Props {
   status: Status;
 }
 
 const Post = (props: Props) => {
-  const { navigateToUser } = useUserNavigation();
+  const { navigateToUser } = useUserNavigation({
+    presenterGenerator: (view) => new UserNavigationHookPresenter(view)
+  });
 
   return (
     <>
