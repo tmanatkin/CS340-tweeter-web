@@ -5,10 +5,10 @@ export interface UserInfoView {
   displayErrorMessage: (message: string) => void;
   displayInfoMessage: (message: string, duration: number) => void;
   clearLastInfoMessage: () => void;
-  setIsFollower: (isFollower: boolean) => void;
-  setFolloweeCount: (count: number) => void;
-  setFollowerCount: (count: number) => void;
-  setIsLoading: (isLoading: boolean) => void;
+  setIsFollower: React.Dispatch<React.SetStateAction<boolean>>;
+  setFolloweeCount: React.Dispatch<React.SetStateAction<number>>;
+  setFollowerCount: React.Dispatch<React.SetStateAction<number>>;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
   authToken: AuthToken | null;
   displayedUser: User | null;
 }
