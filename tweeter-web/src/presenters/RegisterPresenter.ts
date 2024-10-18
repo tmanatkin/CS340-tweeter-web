@@ -1,61 +1,44 @@
-import { User, AuthToken } from "tweeter-shared";
-import { UserService } from "../model/service/UserService";
-import { NavigateFunction } from "react-router-dom";
 import { ChangeEvent } from "react";
 import { Buffer } from "buffer";
+import { AuthenticationPresenter, AuthenticationView } from "./AuthenticationPresenter";
 
-export interface RegisterView {
+export interface RegisterView extends AuthenticationView {
   firstName: string;
   lastName: string;
-  alias: string;
-  password: string;
   imageBytes: Uint8Array;
   imageUrl: string;
   imageFileExtension: string;
-  rememberMe: boolean;
-  navigate: NavigateFunction;
   setImageBytes: React.Dispatch<React.SetStateAction<Uint8Array>>;
   setImageUrl: React.Dispatch<React.SetStateAction<string>>;
   setImageFileExtension: React.Dispatch<React.SetStateAction<string>>;
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  updateUserInfo: (
-    currentUser: User,
-    displayedUser: User | null,
-    authToken: AuthToken,
-    remember: boolean
-  ) => void;
-  displayErrorMessage: (message: string) => void;
 }
 
-export class RegisterPresenter {
-  private userService: UserService;
-  private view: RegisterView;
-
-  public constructor(view: RegisterView) {
-    this.view = view;
-    this.userService = new UserService();
+export class RegisterPresenter extends AuthenticationPresenter {
+  public get view() {
+    return super.view as RegisterView;
   }
 
   public async doRegister() {
-    try {
-      this.view.setIsLoading(true);
+    this.doFailureReportingOperation(
+      async () => {
+        this.authenticateOperation(async () => {
+          return this.userService.register(
+            this.view.firstName,
+            this.view.lastName,
+            this.view.alias,
+            this.view.password,
+            this.view.imageBytes,
+            this.view.imageFileExtension
+          );
+        });
 
-      const [user, authToken] = await this.userService.register(
-        this.view.firstName,
-        this.view.lastName,
-        this.view.alias,
-        this.view.password,
-        this.view.imageBytes,
-        this.view.imageFileExtension
-      );
-
-      this.view.updateUserInfo(user, user, authToken, this.view.rememberMe);
-      this.view.navigate("/");
-    } catch (error) {
-      this.view.displayErrorMessage(`Failed to register user because of exception: ${error}`);
-    } finally {
-      this.view.setIsLoading(false);
-    }
+        this.view.navigate("/");
+      },
+      "register user",
+      async () => {
+        this.view.setIsLoading(false);
+      }
+    );
   }
 
   public handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {

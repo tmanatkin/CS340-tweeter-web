@@ -1,49 +1,31 @@
-import { User, AuthToken } from "tweeter-shared";
-import { UserService } from "../model/service/UserService";
-import { NavigateFunction } from "react-router-dom";
+import { AuthenticationPresenter, AuthenticationView } from "./AuthenticationPresenter";
 
-export interface LoginView {
+export interface LoginView extends AuthenticationView {
   originalUrl: string | undefined;
-  alias: string;
-  password: string;
-  rememberMe: boolean;
-  navigate: NavigateFunction;
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  updateUserInfo: (
-    currentUser: User,
-    displayedUser: User | null,
-    authToken: AuthToken,
-    remember: boolean
-  ) => void;
-  displayErrorMessage: (message: string) => void;
 }
 
-export class LoginPresenter {
-  private userService: UserService;
-  private view: LoginView;
-
-  public constructor(view: LoginView) {
-    this.view = view;
-    this.userService = new UserService();
+export class LoginPresenter extends AuthenticationPresenter {
+  public get view() {
+    return super.view as LoginView;
   }
 
   public async doLogin() {
-    try {
-      this.view.setIsLoading(true);
+    this.doFailureReportingOperation(
+      async () => {
+        this.authenticateOperation(async () => {
+          return this.userService.login(this.view.alias, this.view.password);
+        });
 
-      const [user, authToken] = await this.userService.login(this.view.alias, this.view.password);
-
-      this.view.updateUserInfo(user, user, authToken, this.view.rememberMe);
-
-      if (!!this.view.originalUrl) {
-        this.view.navigate(this.view.originalUrl);
-      } else {
-        this.view.navigate("/");
+        if (!!this.view.originalUrl) {
+          this.view.navigate(this.view.originalUrl);
+        } else {
+          this.view.navigate("/");
+        }
+      },
+      "log user in",
+      async () => {
+        this.view.setIsLoading(false);
       }
-    } catch (error) {
-      this.view.displayErrorMessage(`Failed to log user in because of exception: ${error}`);
-    } finally {
-      this.view.setIsLoading(false);
-    }
+    );
   }
 }
