@@ -3,11 +3,6 @@ import { Buffer } from "buffer";
 import { AuthenticationPresenter, AuthenticationView } from "./AuthenticationPresenter";
 
 export interface RegisterView extends AuthenticationView {
-  firstName: string;
-  lastName: string;
-  imageBytes: Uint8Array;
-  imageUrl: string;
-  imageFileExtension: string;
   setImageBytes: React.Dispatch<React.SetStateAction<Uint8Array>>;
   setImageUrl: React.Dispatch<React.SetStateAction<string>>;
   setImageFileExtension: React.Dispatch<React.SetStateAction<string>>;
@@ -18,19 +13,27 @@ export class RegisterPresenter extends AuthenticationPresenter {
     return super.view as RegisterView;
   }
 
-  public async doRegister() {
+  public async doRegister(
+    firstName: string,
+    lastName: string,
+    alias: string,
+    password: string,
+    imageBytes: Uint8Array,
+    imageFileExtension: string,
+    rememberMe: boolean
+  ) {
     this.doFailureReportingOperation(
       async () => {
         this.authenticateOperation(async () => {
           return this.userService.register(
-            this.view.firstName,
-            this.view.lastName,
-            this.view.alias,
-            this.view.password,
-            this.view.imageBytes,
-            this.view.imageFileExtension
+            firstName,
+            lastName,
+            alias,
+            password,
+            imageBytes,
+            imageFileExtension
           );
-        });
+        }, rememberMe);
 
         this.view.navigate("/");
       },

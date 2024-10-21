@@ -1,6 +1,5 @@
 import "./PostStatus.css";
 import { useState } from "react";
-import { AuthToken, Status } from "tweeter-shared";
 import useToastListener from "../toaster/ToastListenerHook";
 import useUserInfo from "../userInfo/UserInfoHook";
 import { PostPresenter, PostView } from "../../presenters/PostPresenter";
@@ -21,15 +20,13 @@ const PostStatus = (props: Props) => {
     displayInfoMessage: displayInfoMessage,
     clearLastInfoMessage: clearLastInfoMessage,
     setIsLoading: setIsLoading,
-    authToken: authToken,
-    currentUser: currentUser,
-    post: post,
     setPost: setPost
   };
   const [presenter] = useState(props.presenterGenerator(listener));
 
   const submitPost = async (event: React.MouseEvent) => {
-    presenter.submitPost(event);
+    event.preventDefault();
+    presenter.submitPost(post, currentUser!, authToken!);
   };
 
   const clearPost = (event: React.MouseEvent) => {

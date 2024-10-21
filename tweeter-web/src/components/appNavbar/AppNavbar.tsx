@@ -17,7 +17,6 @@ const AppNavbar = (props: Props) => {
   const { displayInfoMessage, displayErrorMessage, clearLastInfoMessage } = useToastListener();
 
   const listener: LogoutView = {
-    authToken: authToken,
     clearUserInfo: clearUserInfo,
     displayInfoMessage: displayInfoMessage,
     displayErrorMessage: displayErrorMessage,
@@ -26,7 +25,7 @@ const AppNavbar = (props: Props) => {
   const [presenter] = useState(props.presenterGenerator(listener));
 
   const logOut = async () => {
-    presenter.logOut();
+    presenter.logOut(authToken!);
   };
 
   return (

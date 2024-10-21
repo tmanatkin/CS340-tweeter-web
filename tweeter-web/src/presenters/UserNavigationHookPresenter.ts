@@ -1,8 +1,8 @@
-import { User } from "tweeter-shared";
+import { AuthToken, User } from "tweeter-shared";
 import { UserService } from "../model/service/UserService";
-import { Presenter, CurrentUserView, AuthTokenView } from "./Presenter";
+import { Presenter, View } from "./Presenter";
 
-export interface UserNavigationHookView extends CurrentUserView, AuthTokenView {
+export interface UserNavigationHookView extends View {
   setDisplayedUser: (user: User) => void;
 }
 
@@ -14,17 +14,21 @@ export class UserNavigationHookPresenter extends Presenter<UserNavigationHookVie
     this.userService = new UserService();
   }
 
-  public async navigateToUser(event: React.MouseEvent): Promise<void> {
+  public async navigateToUser(
+    event: React.MouseEvent,
+    authToken: AuthToken,
+    currentUser: User
+  ): Promise<void> {
     event.preventDefault();
 
     this.doFailureReportingOperation(async () => {
       const alias = this.extractAlias(event.target.toString());
 
-      const user = await this.userService.getUser(this.view.authToken!, alias);
+      const user = await this.userService.getUser(authToken!, alias);
 
       if (!!user) {
-        if (this.view.currentUser!.equals(user)) {
-          this.view.setDisplayedUser(this.view.currentUser!);
+        if (currentUser!.equals(user)) {
+          this.view.setDisplayedUser(currentUser!);
         } else {
           this.view.setDisplayedUser(user);
         }

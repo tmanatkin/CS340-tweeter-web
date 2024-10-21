@@ -4,9 +4,6 @@ import { View, Presenter } from "./Presenter";
 import { UserService } from "../model/service/UserService";
 
 export interface AuthenticationView extends View {
-  alias: string;
-  password: string;
-  rememberMe: boolean;
   setImageFileExtension?: React.Dispatch<React.SetStateAction<string>>;
   navigate: NavigateFunction;
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
@@ -25,9 +22,12 @@ export abstract class AuthenticationPresenter extends Presenter<AuthenticationVi
     this.userService = new UserService();
   }
 
-  protected authenticateOperation = async (authOperation: () => Promise<[User, AuthToken]>) => {
+  protected authenticateOperation = async (
+    authOperation: () => Promise<[User, AuthToken]>,
+    rememberMe: boolean
+  ) => {
     this.view.setIsLoading(true);
     const [user, authToken] = await authOperation();
-    this.view.updateUserInfo(user, user, authToken, this.view.rememberMe);
+    this.view.updateUserInfo(user, user, authToken, rememberMe);
   };
 }

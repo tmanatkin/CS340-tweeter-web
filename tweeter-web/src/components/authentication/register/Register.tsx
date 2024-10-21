@@ -28,14 +28,6 @@ const Register = (props: Props) => {
   const { displayErrorMessage } = useToastListener();
 
   const listener: RegisterView = {
-    firstName: firstName,
-    lastName: lastName,
-    alias: alias,
-    password: password,
-    imageBytes: imageBytes,
-    imageUrl: imageUrl,
-    imageFileExtension: imageFileExtension,
-    rememberMe: rememberMe,
     navigate: navigate,
     setImageBytes: setImageBytes,
     setImageUrl: setImageUrl,
@@ -47,7 +39,15 @@ const Register = (props: Props) => {
   const [presenter] = useState(props.presenterGenerator(listener));
 
   const doRegister = async () => {
-    presenter.doRegister();
+    presenter.doRegister(
+      firstName,
+      lastName,
+      alias,
+      password,
+      imageBytes,
+      imageFileExtension,
+      rememberMe
+    );
   };
 
   const checkSubmitButtonStatus = (): boolean => {
@@ -61,6 +61,7 @@ const Register = (props: Props) => {
   };
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    event.preventDefault();
     presenter.handleFileChange(event);
   };
 

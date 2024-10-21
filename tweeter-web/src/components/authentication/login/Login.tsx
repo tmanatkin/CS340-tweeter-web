@@ -24,10 +24,6 @@ const Login = (props: Props) => {
   const { displayErrorMessage } = useToastListener();
 
   const listener: LoginView = {
-    originalUrl: props.originalUrl,
-    alias: alias,
-    password: password,
-    rememberMe: rememberMe,
     navigate: navigate,
     setIsLoading: setIsLoading,
     updateUserInfo: updateUserInfo,
@@ -36,7 +32,7 @@ const Login = (props: Props) => {
   const [presenter] = useState(props.presenterGenerator(listener));
 
   const doLogin = async () => {
-    presenter.doLogin();
+    presenter.doLogin(alias, password, rememberMe, props.originalUrl);
   };
 
   const checkSubmitButtonStatus = (): boolean => {

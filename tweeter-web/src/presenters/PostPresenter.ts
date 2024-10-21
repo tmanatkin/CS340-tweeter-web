@@ -1,15 +1,8 @@
-import { Status } from "tweeter-shared";
+import { AuthToken, Status, User } from "tweeter-shared";
 import { UserService } from "../model/service/UserService";
-import {
-  AuthTokenView,
-  CurrentUserView,
-  MessageView,
-  Presenter,
-  SetIsLoadingView
-} from "./Presenter";
+import { MessageView, Presenter, SetIsLoadingView } from "./Presenter";
 
-export interface PostView extends MessageView, SetIsLoadingView, AuthTokenView, CurrentUserView {
-  post: string;
+export interface PostView extends MessageView, SetIsLoadingView {
   setPost: React.Dispatch<React.SetStateAction<string>>;
 }
 
@@ -21,17 +14,15 @@ export class PostPresenter extends Presenter<PostView> {
     this.userService = new UserService();
   }
 
-  public async submitPost(event: React.MouseEvent) {
-    event.preventDefault();
-
+  public async submitPost(post: string, currentUser: User, authToken: AuthToken) {
     this.doFailureReportingOperation(
       async () => {
         this.view.setIsLoading(true);
         this.view.displayInfoMessage("Posting status...", 0);
 
-        const status = new Status(this.view.post, this.view.currentUser!, Date.now());
+        const status = new Status(post, currentUser!, Date.now());
 
-        await this.userService.postStatus(this.view.authToken!, status);
+        await this.userService.postStatus(authToken!, status);
 
         this.view.setPost("");
         this.view.displayInfoMessage("Status posted!", 2000);
