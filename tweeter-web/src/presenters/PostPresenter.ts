@@ -7,11 +7,15 @@ export interface PostView extends MessageView, SetIsLoadingView {
 }
 
 export class PostPresenter extends Presenter<PostView> {
-  private userService: UserService;
+  private _userService: UserService;
 
   public constructor(view: PostView) {
     super(view);
-    this.userService = new UserService();
+    this._userService = new UserService();
+  }
+
+  public get userService() {
+    return this._userService;
   }
 
   public async submitPost(post: string, currentUser: User, authToken: AuthToken) {

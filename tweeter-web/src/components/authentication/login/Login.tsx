@@ -11,6 +11,7 @@ import { LoginPresenter, LoginView } from "../../../presenters/LoginPresenter";
 interface Props {
   presenterGenerator: (view: LoginView) => LoginPresenter;
   originalUrl?: string;
+  presenter?: LoginPresenter;
 }
 
 const Login = (props: Props) => {
@@ -29,7 +30,7 @@ const Login = (props: Props) => {
     updateUserInfo: updateUserInfo,
     displayErrorMessage: displayErrorMessage
   };
-  const [presenter] = useState(props.presenterGenerator(listener));
+  const [presenter] = useState(props.presenter ?? props.presenterGenerator(listener));
 
   const doLogin = async () => {
     presenter.doLogin(alias, password, rememberMe, props.originalUrl);

@@ -6,6 +6,7 @@ import { PostPresenter, PostView } from "../../presenters/PostPresenter";
 
 interface Props {
   presenterGenerator: (view: PostView) => PostPresenter;
+  presenter?: PostPresenter;
 }
 
 const PostStatus = (props: Props) => {
@@ -22,7 +23,7 @@ const PostStatus = (props: Props) => {
     setIsLoading: setIsLoading,
     setPost: setPost
   };
-  const [presenter] = useState(props.presenterGenerator(listener));
+  const [presenter] = useState(props.presenter ?? props.presenterGenerator(listener));
 
   const submitPost = async (event: React.MouseEvent) => {
     event.preventDefault();
@@ -45,6 +46,7 @@ const PostStatus = (props: Props) => {
           <textarea
             className="form-control"
             id="postStatusTextArea"
+            aria-label="post text"
             rows={10}
             placeholder="What's on your mind?"
             value={post}
@@ -57,6 +59,7 @@ const PostStatus = (props: Props) => {
           <button
             id="postStatusButton"
             className="btn btn-md btn-primary me-1"
+            aria-label="post"
             type="button"
             disabled={checkButtonStatus()}
             style={{ width: "8em" }}
@@ -75,6 +78,7 @@ const PostStatus = (props: Props) => {
           <button
             id="clearStatusButton"
             className="btn btn-md btn-secondary"
+            aria-label="clear"
             type="button"
             disabled={checkButtonStatus()}
             onClick={(event) => clearPost(event)}
