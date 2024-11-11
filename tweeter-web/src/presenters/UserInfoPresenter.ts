@@ -1,5 +1,5 @@
 import { AuthToken, User } from "tweeter-shared";
-import { UserService } from "../model/service/UserService";
+import { FollowService } from "../model/service/FollowService";
 import { Presenter, MessageView } from "./Presenter";
 
 export interface UserInfoView extends MessageView {
@@ -10,11 +10,11 @@ export interface UserInfoView extends MessageView {
 }
 
 export class UserInfoPresenter extends Presenter<UserInfoView> {
-  private userService: UserService;
+  private followService: FollowService;
 
   public constructor(view: UserInfoView) {
     super(view);
-    this.userService = new UserService();
+    this.followService = new FollowService();
   }
 
   public async setIsFollowerStatus(authToken: AuthToken, currentUser: User, displayedUser: User) {
@@ -23,7 +23,7 @@ export class UserInfoPresenter extends Presenter<UserInfoView> {
         this.view.setIsFollower(false);
       } else {
         this.view.setIsFollower(
-          await this.userService.getIsFollowerStatus(authToken!, currentUser!, displayedUser!)
+          await this.followService.getIsFollowerStatus(authToken!, currentUser!, displayedUser!)
         );
       }
     }, "determine follower status");
@@ -31,13 +31,17 @@ export class UserInfoPresenter extends Presenter<UserInfoView> {
 
   public async setNumbFollowees(authToken: AuthToken, displayedUser: User) {
     this.doFailureReportingOperation(async () => {
-      this.view.setFolloweeCount(await this.userService.getFolloweeCount(authToken, displayedUser));
+      this.view.setFolloweeCount(
+        await this.followService.getFolloweeCount(authToken, displayedUser)
+      );
     }, "get followees count");
   }
 
   public async setNumbFollowers(authToken: AuthToken, displayedUser: User) {
     this.doFailureReportingOperation(async () => {
-      this.view.setFollowerCount(await this.userService.getFollowerCount(authToken, displayedUser));
+      this.view.setFollowerCount(
+        await this.followService.getFollowerCount(authToken, displayedUser)
+      );
     }, "get followers count");
   }
 
@@ -47,7 +51,7 @@ export class UserInfoPresenter extends Presenter<UserInfoView> {
         this.view.setIsLoading(true);
         this.view.displayInfoMessage(`Following ${displayedUser!.name}...`, 0);
 
-        const [followerCount, followeeCount] = await this.userService.follow(
+        const [followerCount, followeeCount] = await this.followService.follow(
           authToken!,
           displayedUser!
         );
@@ -70,7 +74,7 @@ export class UserInfoPresenter extends Presenter<UserInfoView> {
         this.view.setIsLoading(true);
         this.view.displayInfoMessage(`Unfollowing ${displayedUser!.name}...`, 0);
 
-        const [followerCount, followeeCount] = await this.userService.unfollow(
+        const [followerCount, followeeCount] = await this.followService.unfollow(
           authToken!,
           displayedUser!
         );

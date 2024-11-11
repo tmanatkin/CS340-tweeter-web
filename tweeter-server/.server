@@ -1,0 +1,19 @@
+BUCKET='cs340-milestone3'
+LAMBDA_ROLE='arn:aws:iam::867344436360:role/cs340-lambda-role'
+EDIT_LAMBDALIST='
+tweeterGetFollowees | lambda/follow/GetFolloweesLambda.handler
+tweeterGetFollowers | lambda/follow/GetFollowersLambda.handler
+tweeterGetIsFollowerStatus | lambda/follow/GetIsFollowerStatusLambda.handler
+tweeterGetFolloweeCount | lambda/follow/GetFolloweeCountLambda.handler
+tweeterGetFollowerCount | lambda/follow/GetFollowerCountLambda.handler
+tweeterFollow | lambda/follow/FollowLambda.handler
+tweeterUnfollow | lambda/follow/UnfollowLambda.handler
+tweeterGetFeedItems | lambda/status/GetFeedItemsLambda.handler
+tweeterGetStoryItems | lambda/status/GetStoryItemsLambda.handler
+tweeterGetUser | lambda/user/GetUserLambda.handler
+tweeterRegister | lambda/user/RegisterLambda.handler
+tweeterLogin | lambda/user/LoginLambda.handler
+tweeterLogout | lambda/user/LogoutLambda.handler
+tweeterPostStatus | lambda/user/PostStatusLambda.handler
+'
+LAMBDALAYER_ARN='arn:aws:lambda:us-east-1:867344436360:layer:tweeter-lambda-dependencies:51'

@@ -1,3 +1,4 @@
+import { StatusDto } from "../dto";
 import { PostSegment, Type } from "./PostSegment";
 import { User } from "./User";
 import { format } from "date-fns";
@@ -39,12 +40,7 @@ export class Status {
 
     if (startIndex < post.length) {
       segments.push(
-        new PostSegment(
-          post.substring(startIndex),
-          startIndex,
-          post.length,
-          Type.text
-        )
+        new PostSegment(post.substring(startIndex), startIndex, post.length, Type.text)
       );
     }
 
@@ -55,7 +51,7 @@ export class Status {
     const references = [
       ...Status.parseUrlReferences(post),
       ...Status.parseMentionReferences(post),
-      ...Status.parseNewlines(post),
+      ...Status.parseNewlines(post)
     ];
 
     references.sort((a, b) => {
@@ -77,9 +73,7 @@ export class Status {
 
       if (startIndex > -1) {
         // Push the url
-        references.push(
-          new PostSegment(url, startIndex, startIndex + url.length, Type.url)
-        );
+        references.push(new PostSegment(url, startIndex, startIndex + url.length, Type.url));
 
         // Move start and previous start past the url
         startIndex = startIndex + url.length;
@@ -150,12 +144,7 @@ export class Status {
       if (startIndex > -1) {
         // Push the alias
         references.push(
-          new PostSegment(
-            mention,
-            startIndex,
-            startIndex + mention.length,
-            Type.alias
-          )
+          new PostSegment(mention, startIndex, startIndex + mention.length, Type.alias)
         );
 
         // Move start and previous start past the mention
@@ -190,9 +179,7 @@ export class Status {
     let match;
     while ((match = regex.exec(post)) !== null) {
       const matchIndex = match.index;
-      newlines.push(
-        new PostSegment("\n", matchIndex, matchIndex + 1, Type.newline)
-      );
+      newlines.push(new PostSegment("\n", matchIndex, matchIndex + 1, Type.newline));
     }
 
     return newlines;
@@ -273,5 +260,17 @@ export class Status {
 
   public toJson(): string {
     return JSON.stringify(this);
+  }
+
+  public get dto(): StatusDto {
+    return {
+      post: this._post,
+      user: this._user.dto,
+      timestamp: this._timestamp
+    };
+  }
+
+  public static fromDto(dto: StatusDto | null): Status | null {
+    return dto == null ? null : new Status(dto.post, User.fromDto(dto.user) as User, dto.timestamp);
   }
 }
