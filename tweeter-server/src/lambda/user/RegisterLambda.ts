@@ -1,7 +1,16 @@
 import { RegisterRequest, AuthenticationResponse } from "tweeter-shared";
 import { UserService } from "../../model/service/UserService";
+import { validateRequest } from "../../error/LambdaErrors";
 
 export const handler = async (request: RegisterRequest): Promise<AuthenticationResponse> => {
+  validateRequest(request, [
+    "firstName",
+    "lastName",
+    "alias",
+    "password",
+    "userImageBytes",
+    "imageFileExtension"
+  ]);
   const userService = new UserService();
   const [user, authToken] = await userService.register(
     request.firstName,
