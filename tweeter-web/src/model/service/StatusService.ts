@@ -1,14 +1,26 @@
-import { AuthToken, Status, FakeData } from "tweeter-shared";
+import { Status, AuthToken } from "tweeter-shared";
+import { ServerFacade } from "../net/ServerFacade";
 
 export class StatusService {
+  private serverFacade: ServerFacade;
+
+  constructor() {
+    this.serverFacade = new ServerFacade();
+  }
+
   public async loadMoreFeedItems(
     authToken: AuthToken,
     userAlias: string,
     pageSize: number,
     lastItem: Status | null
   ): Promise<[Status[], boolean]> {
-    // TODO: Replace with the result of calling server
-    return FakeData.instance.getPageOfStatuses(lastItem, pageSize);
+    const request = {
+      token: authToken.token,
+      userAlias,
+      pageSize,
+      lastItem: lastItem?.dto ?? null
+    };
+    return this.serverFacade.getMoreFeedItems(request);
   }
 
   public async loadMoreStoryItems(
@@ -17,7 +29,12 @@ export class StatusService {
     pageSize: number,
     lastItem: Status | null
   ): Promise<[Status[], boolean]> {
-    // TODO: Replace with the result of calling server
-    return FakeData.instance.getPageOfStatuses(lastItem, pageSize);
+    const request = {
+      token: authToken.token,
+      userAlias,
+      pageSize,
+      lastItem: lastItem?.dto ?? null
+    };
+    return this.serverFacade.getMoreStoryItems(request);
   }
 }
