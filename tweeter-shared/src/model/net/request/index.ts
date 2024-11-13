@@ -8,5 +8,6 @@ export * from './PagedUserItemRequest';
 export * from './PostStatusRequest';
 export * from './RegisterRequest';
 export * from './StatusItemRequest';
+export * from './TweeterRequest';
 export * from './UserFollowActionRequest';
 export * from './UserRequest';
