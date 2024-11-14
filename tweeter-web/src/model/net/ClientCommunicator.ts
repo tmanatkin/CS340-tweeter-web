@@ -7,6 +7,19 @@ export class ClientCommunicator {
     this.SERVER_URL = SERVER_URL;
   }
 
+  private removeUnderscores(obj: any): any {
+    if (Array.isArray(obj)) {
+      return obj.map((item) => this.removeUnderscores(item));
+    } else if (obj !== null && typeof obj === "object") {
+      return Object.keys(obj).reduce((acc, key) => {
+        const newKey = key.startsWith("_") ? key.slice(1) : key;
+        acc[newKey] = this.removeUnderscores(obj[key]);
+        return acc;
+      }, {} as any);
+    }
+    return obj;
+  }
+
   public async doPost<REQ extends TweeterRequest, RES extends TweeterResponse>(
     req: REQ | undefined,
     endpoint: string,
@@ -33,7 +46,8 @@ export class ClientCommunicator {
       if (resp.ok) {
         // Be careful with the return type here. resp.json() returns Promise<any> which means there is no type checking on response.
         const response: RES = await resp.json();
-        return response;
+        const testResponse = this.removeUnderscores(response);
+        return testResponse;
       } else {
         const error = await resp.json();
         throw new Error(error.errorMessage);
