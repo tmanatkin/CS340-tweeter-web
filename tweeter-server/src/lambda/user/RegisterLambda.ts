@@ -8,7 +8,7 @@ export const handler = async (request: RegisterRequest): Promise<AuthenticationR
     "lastName",
     "alias",
     "password",
-    "userImageBytes",
+    "imageStringBase64",
     "imageFileExtension"
   ]);
   const userService = new UserService();
@@ -17,7 +17,7 @@ export const handler = async (request: RegisterRequest): Promise<AuthenticationR
     request.lastName,
     request.alias,
     request.password,
-    request.userImageBytes,
+    request.imageStringBase64,
     request.imageFileExtension
   );
   return {

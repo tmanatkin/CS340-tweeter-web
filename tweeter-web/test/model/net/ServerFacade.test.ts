@@ -22,7 +22,7 @@ describe("ServerFacade Integration Tests", () => {
       lastName: "lastName",
       alias: "alias",
       password: "password",
-      userImageBytes: Buffer.from(new Uint8Array(10)),
+      imageStringBase64: "imageStringBase64",
       imageFileExtension: ".ext"
     };
     const response = await serverFacade.register(registerRequest);
