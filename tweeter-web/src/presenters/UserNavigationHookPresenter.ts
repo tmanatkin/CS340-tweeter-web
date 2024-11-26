@@ -15,15 +15,11 @@ export class UserNavigationHookPresenter extends Presenter<UserNavigationHookVie
   }
 
   public async navigateToUser(
-    event: React.MouseEvent,
+    alias: string,
     authToken: AuthToken,
     currentUser: User
   ): Promise<void> {
-    event.preventDefault();
-
     this.doFailureReportingOperation(async () => {
-      const alias = this.extractAlias(event.target.toString());
-
       const user = await this.userService.getUser(authToken!, alias);
 
       if (!!user) {

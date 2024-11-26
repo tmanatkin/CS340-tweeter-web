@@ -44,10 +44,10 @@ export class RegisterPresenter extends AuthenticationPresenter {
     );
   }
 
-  public handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    this.handleImageFile(file);
-  };
+  // public handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+  //   const file = event.target.files?.[0];
+  //   this.handleImageFile(file);
+  // };
 
   public handleImageFile = (file: File | undefined) => {
     if (file) {

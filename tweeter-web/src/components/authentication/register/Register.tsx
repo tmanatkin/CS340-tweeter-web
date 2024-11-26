@@ -62,7 +62,9 @@ const Register = (props: Props) => {
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     event.preventDefault();
-    presenter.handleFileChange(event);
+    const file = event.target.files?.[0];
+    presenter.handleImageFile(file);
+    // presenter.handleFileChange(event);
   };
 
   const inputFieldGenerator = () => {
