@@ -1,9 +1,34 @@
-import { FakeData, UserDto, StatusDto, AuthTokenDto } from "tweeter-shared";
+import { UserDto, StatusDto, AuthTokenDto, AuthToken, Status } from "tweeter-shared";
+import { DAOFactory } from "../factory/DAOFactory";
+import { UserDAO } from "../dao/UserDAO";
+import { ProfileImageDAO } from "../dao/ProfileImageDAO";
+import bcrypt from "bcryptjs";
+import { AuthService } from "./AuthService";
+import { FeedDAO } from "../dao/FeedDAO";
+import { StoryDAO } from "../dao/StoryDAO";
+import { FollowDAO } from "../dao/FollowDAO";
 
-export class UserService {
+export class UserService extends AuthService {
+  private userDAO: UserDAO;
+  private profileImageDAO: ProfileImageDAO;
+  private feedDAO: FeedDAO;
+  private storyDAO: StoryDAO;
+  private followDAO: FollowDAO;
+
+  constructor() {
+    super();
+    const daoFactory = DAOFactory.getInstance();
+    this.userDAO = daoFactory.createUserDAO();
+    this.profileImageDAO = daoFactory.createProfileImageDAO();
+    this.feedDAO = daoFactory.createFeedDAO();
+    this.storyDAO = daoFactory.createStoryDAO();
+    this.followDAO = daoFactory.createFollowDAO();
+  }
+
   public async getUser(token: string, alias: string): Promise<UserDto | null> {
-    // TODO: Replace with the result of calling server
-    return FakeData.instance.findUserByAlias(alias);
+    this.validateToken(token);
+    return this.userDAO.getUser(alias);
+    // will need to post to feed as well
   }
 
   public async register(
@@ -14,38 +39,85 @@ export class UserService {
     imageStringBase64: string,
     imageFileExtension: string
   ): Promise<[UserDto, AuthTokenDto]> {
-    // Not neded now, but will be needed when you make the request to the server in milestone 3
-    // const imageStringBase64: string = Buffer.from(userImageBytes).toString("base64");
-
-    // TODO: Replace with the result of calling the server
-    const user = FakeData.instance.firstUser;
+    const imageURL = await this.profileImageDAO.putImage(alias, imageStringBase64);
+    const passwordHash = await this.hashPassword(password);
+    const tweeterAlias = await this.tweeterHandle(alias);
+    const user = await this.userDAO.putUser(
+      firstName,
+      lastName,
+      tweeterAlias,
+      passwordHash,
+      imageURL
+    );
 
     if (user === null) {
       throw new Error("Invalid registration");
     }
 
-    return [user, FakeData.instance.authToken];
+    const authToken = await this.authDAO.putAuthToken(AuthToken.Generate(), tweeterAlias);
+
+    if (authToken === null) {
+      throw new Error("Failed to generate auth token");
+    }
+
+    return [user, authToken];
   }
 
   public async login(alias: string, password: string): Promise<[UserDto, AuthTokenDto]> {
-    // TODO: Replace with the result of calling the server
-    const user = FakeData.instance.firstUser;
+    const tweeterAlias = await this.tweeterHandle(alias);
+    this.validateUser(tweeterAlias, password);
+
+    const user = await this.userDAO.getUser(tweeterAlias);
 
     if (user === null) {
       throw new Error("Invalid alias or password");
     }
 
-    return [user, FakeData.instance.authToken];
+    const authToken = await this.authDAO.putAuthToken(AuthToken.Generate(), tweeterAlias);
+
+    if (authToken === null) {
+      throw new Error("Failed to generate auth token");
+    }
+
+    return [user, authToken];
   }
 
   public async logout(token: string): Promise<void> {
-    // Pause so we can see the logging out message. Delete when the call to the server is implemented.
-    // await new Promise((res) => setTimeout(res, 1000));
+    await this.authDAO.deleteAuthToken(token);
   }
 
   public async postStatus(token: string, newStatus: StatusDto): Promise<void> {
-    // Pause so we can see the logging out message. Remove when connected to the server
-    // await new Promise((f) => setTimeout(f, 2000));
-    // TODO: Call the server to post the status
+    this.validateToken(token);
+
+    const currentUserAlias = await this.authDAO.getAuthTokenAlias(token);
+    const followerAliases = await this.followDAO.getAllFollowerAliases(currentUserAlias);
+
+    const status = Status.fromDto(newStatus);
+    if (status === null) {
+      throw new Error("Invalid status");
+    }
+
+    await this.storyDAO.putStatus(status);
+    await this.feedDAO.putStatus(followerAliases, status);
+  }
+
+  private async hashPassword(password: string): Promise<string> {
+    const salt = await bcrypt.genSalt(5);
+    const passwordHash = await bcrypt.hash(password, salt);
+    return passwordHash;
+  }
+
+  private async validateUser(alias: string, password: string): Promise<void> {
+    const userPasswordHash = await this.userDAO.getUserPasswordHash(alias);
+
+    if (userPasswordHash === null) {
+      throw new Error("Invalid alias");
+    }
+
+    const isValid = await bcrypt.compare(password, userPasswordHash);
+
+    if (!isValid) {
+      throw new Error("Invalid password");
+    }
   }
 }

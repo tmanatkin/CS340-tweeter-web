@@ -284,13 +284,10 @@ export class ServerFacade {
       request,
       "/login"
     );
-    console.log("response.user", response.user);
-    console.log("response.user.firstName", response.user.firstName);
+
     // Convert the UserDto returned by ClientCommunicator to a User
     const user: User | null =
       response.success && response.user ? User.fromDto(response.user) : null;
-    console.log("user", user);
-    console.log("user.firstName", user?.firstName);
 
     // Convert the AuthTokenDto returned by ClientCommunicator to an AuthToken
     const authToken: AuthToken | null =

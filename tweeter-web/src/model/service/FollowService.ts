@@ -20,7 +20,7 @@ export class FollowService {
       pageSize,
       lastItem: lastItem?.dto ?? null
     };
-    return this.serverFacade.getMoreFollowees(request);
+    return this.serverFacade.getMoreFollowers(request);
   }
 
   public async loadMoreFollowees(
