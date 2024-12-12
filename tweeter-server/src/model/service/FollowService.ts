@@ -103,15 +103,25 @@ export class FollowService extends AuthService {
 
   public async getFolloweeCount(token: string, user: UserDto): Promise<number> {
     this.validateToken(token);
-    const followeeAliases = await this.followDAO.getAllFolloweeAliases(user.alias);
-    const count = followeeAliases.length;
+    // const followeeAliases = await this.followDAO.getAllFolloweeAliases(user.alias);
+    // const count = followeeAliases.length;
+    const currentUser = await this.userDAO.getUserFollowCounts(user.alias);
+    if (!currentUser) {
+      throw new Error("User not found");
+    }
+    const count = currentUser.followeeCount;
     return count;
   }
 
   public async getFollowerCount(token: string, user: UserDto): Promise<number> {
     this.validateToken(token);
-    const followerAliases = await this.followDAO.getAllFollowerAliases(user.alias);
-    const count = followerAliases.length;
+    // const followerAliases = await this.followDAO.getAllFollowerAliases(user.alias);
+    // const count = followerAliases.length;
+    const currentUser = await this.userDAO.getUserFollowCounts(user.alias);
+    if (!currentUser) {
+      throw new Error("User not found");
+    }
+    const count = currentUser.followerCount;
     return count;
   }
 
@@ -128,6 +138,9 @@ export class FollowService extends AuthService {
     }
 
     await this.followDAO.putFollow(new Follow(currentUser, User.fromDto(userToFollow)!));
+
+    await this.userDAO.adjustFolloweeCount(currentUserAlias, 1);
+    await this.userDAO.adjustFollowerCount(userToFollow.alias, 1);
 
     const followerCount = await this.getFollowerCount(token, userToFollow);
     const followeeCount = await this.getFolloweeCount(token, userToFollow);
@@ -148,6 +161,9 @@ export class FollowService extends AuthService {
     }
 
     await this.followDAO.deleteFollow(currentUser, User.fromDto(userToUnfollow)!);
+
+    await this.userDAO.adjustFolloweeCount(currentUserAlias, -1);
+    await this.userDAO.adjustFollowerCount(userToUnfollow.alias, -1);
 
     const followerCount = await this.getFollowerCount(token, userToUnfollow);
     const followeeCount = await this.getFolloweeCount(token, userToUnfollow);

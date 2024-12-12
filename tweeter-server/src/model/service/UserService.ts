@@ -7,6 +7,7 @@ import { AuthService } from "./AuthService";
 import { FeedDAO } from "../dao/FeedDAO";
 import { StoryDAO } from "../dao/StoryDAO";
 import { FollowDAO } from "../dao/FollowDAO";
+import { DeleteMessageCommand, SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 
 export class UserService extends AuthService {
   private userDAO: UserDAO;
@@ -14,6 +15,7 @@ export class UserService extends AuthService {
   private feedDAO: FeedDAO;
   private storyDAO: StoryDAO;
   private followDAO: FollowDAO;
+  private sqsClient: SQSClient;
 
   constructor() {
     super();
@@ -23,6 +25,7 @@ export class UserService extends AuthService {
     this.feedDAO = daoFactory.createFeedDAO();
     this.storyDAO = daoFactory.createStoryDAO();
     this.followDAO = daoFactory.createFollowDAO();
+    this.sqsClient = new SQSClient({ region: "us-east-1" });
   }
 
   public async getUser(token: string, alias: string): Promise<UserDto | null> {
@@ -89,16 +92,69 @@ export class UserService extends AuthService {
   public async postStatus(token: string, newStatus: StatusDto): Promise<void> {
     this.validateToken(token);
 
-    const currentUserAlias = await this.authDAO.getAuthTokenAlias(token);
-    const followerAliases = await this.followDAO.getAllFollowerAliases(currentUserAlias);
-
     const status = Status.fromDto(newStatus);
     if (status === null) {
       throw new Error("Invalid status");
     }
 
     await this.storyDAO.putStatus(status);
-    await this.feedDAO.putStatus(followerAliases, status);
+
+    const params = {
+      MessageBody: JSON.stringify(newStatus),
+      QueueUrl: "https://sqs.us-east-1.amazonaws.com/867344436360/TweeterPostsQ"
+    };
+
+    try {
+      const data = await this.sqsClient.send(new SendMessageCommand(params));
+      console.log("Success, message sent. MessageID:", data.MessageId);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  public async fetchFollowers(body: StatusDto) {
+    const followerAliases = await this.followDAO.getAllFollowerAliases(body.user.alias);
+    const jobs = this.chunkArray(followerAliases, 25);
+
+    let jobCounter = 0;
+
+    for (const job of jobs) {
+      const params = {
+        MessageBody: JSON.stringify({ status: { ...body }, followers: job }),
+        QueueUrl: "https://sqs.us-east-1.amazonaws.com/867344436360/TweeterJobsQ"
+      };
+
+      console.log("Sending job", ++jobCounter, "out of", jobs.length);
+
+      try {
+        const data = await this.sqsClient.send(new SendMessageCommand(params));
+        console.log("Success, job sent. MessageID:", data.MessageId);
+      } catch (err) {
+        throw err;
+      }
+    }
+  }
+
+  public async jobHandler(body: { status: StatusDto; followers: string[] }) {
+    const statusClass = Status.fromDto(body.status);
+    if (statusClass === null) {
+      throw new Error("Invalid status");
+    }
+    // console.log("Processing job for status:", statusClass);
+    try {
+      await this.feedDAO.putStatus(body.followers, statusClass);
+      // console.log("Success, job posted.");
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  private chunkArray(array: string[], chunkSize: number): string[][] {
+    const chunks = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+      chunks.push(array.slice(i, i + chunkSize));
+    }
+    return chunks;
   }
 
   private async hashPassword(password: string): Promise<string> {

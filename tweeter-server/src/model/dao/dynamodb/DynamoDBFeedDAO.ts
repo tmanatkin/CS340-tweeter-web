@@ -63,14 +63,14 @@ export class DynamoDBFeedDAO implements FeedDAO {
           PutRequest: {
             Item: {
               [this.followerAliasAttr]: alias,
-              [this.followeeAliasAttr]: newStatus.user.alias,
               [this.timestampAttr]: newStatus.timestamp,
+              [this.followeeAliasAttr]: newStatus.user.alias,
               [this.postAttr]: newStatus.post
             }
           }
         }))
       }
     };
-    await this.client.send(new BatchWriteCommand(params));
+    const result = await this.client.send(new BatchWriteCommand(params));
   }
 }
